@@ -43,30 +43,18 @@ class App {
   // =============================================
   bindEvents() {
     // Navigation
-    const switchNav = (viewId) => {
-      if (viewId) this.switchView(viewId);
-    };
-
-    document.querySelectorAll('.nav-menu .nav-item').forEach(item => {
+    document.querySelectorAll('.nav-menu [data-view]').forEach(item => {
       item.addEventListener('click', (e) => {
         e.preventDefault();
         const view = item.getAttribute('data-view');
-        switchNav(view);
+        if (view) this.switchView(view);
       });
-      const btn = item.querySelector('button');
-      if (btn) {
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          const view = item.getAttribute('data-view');
-          switchNav(view);
-        });
-      }
     });
 
-    // Delegated click on document for any nav button or menu item
+    // Delegated click on document for any nav element
     document.addEventListener('click', (e) => {
-      const navItem = e.target.closest('.nav-item');
-      if (navItem) {
+      const navItem = e.target.closest('[data-view]');
+      if (navItem && navItem.closest('.nav-menu')) {
         const view = navItem.getAttribute('data-view');
         if (view && view !== this.currentView) {
           e.preventDefault();
