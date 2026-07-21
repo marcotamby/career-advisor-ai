@@ -42,24 +42,13 @@ class App {
   //  MAIN EVENT BINDING
   // =============================================
   bindEvents() {
-    // Navigation
-    document.querySelectorAll('.nav-menu [data-view]').forEach(item => {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        const view = item.getAttribute('data-view');
-        if (view) this.switchView(view);
-      });
-    });
-
-    // Delegated click on document for any nav element
+    // Navigation (single clean delegated click handler)
     document.addEventListener('click', (e) => {
-      const navItem = e.target.closest('[data-view]');
-      if (navItem && navItem.closest('.nav-menu')) {
+      const navItem = e.target.closest('.nav-item[data-view]');
+      if (navItem) {
+        e.preventDefault();
         const view = navItem.getAttribute('data-view');
-        if (view && view !== this.currentView) {
-          e.preventDefault();
-          this.switchView(view);
-        }
+        if (view) this.switchView(view);
       }
     });
 
