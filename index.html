@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Career Advisor AI - Consulente di Carriera & Ottimizzazione CV</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/cv-templates.css">
+
+  <!-- PDF.js Library for Client-Side PDF Parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div>
+          <div class="brand-title">CAREER ADVISOR</div>
+          <div class="brand-subtitle">Assistente di Carriera AI</div>
+        </div>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item active" data-view="analyzer" onclick="window.app && window.app.switchView('analyzer')">
+          <button type="button" onclick="window.app && window.app.switchView('analyzer')">
+            <span class="nav-icon">🎯</span>
+            <span>Analisi Annuncio & CV</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="search" onclick="window.app && window.app.switchView('search')">
+          <button type="button" onclick="window.app && window.app.switchView('search')">
+            <span class="nav-icon">🔍</span>
+            <span>Ricerca Annunci AI (24h)</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="profile" onclick="window.app && window.app.switchView('profile')">
+          <button type="button" onclick="window.app && window.app.switchView('profile')">
+            <span class="nav-icon">👤</span>
+            <span>Profilo Base & CV Master</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="tracker" onclick="window.app && window.app.switchView('tracker')">
+          <button type="button" onclick="window.app && window.app.switchView('tracker')">
+            <span class="nav-icon">📋</span>
+            <span>Tracciamento Candidature</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-badge">
+          <div class="user-avatar" id="user-avatar-initials">MT</div>
+          <div class="user-info">
+            <h5 id="sidebar-user-name">Matteo Tamborrino</h5>
+            <p id="sidebar-user-title">Busto Arsizio (VA)</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <main class="main-wrapper">
+      
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-title-container">
+          <h2 id="view-title">🎯 Analisi Annuncio & CV su Misura</h2>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-ghost btn-sm" id="btn-clear-analysis-fields" style="color: #38BDF8;">
+            <span>🧹 Pulisci</span>
+          </button>
+          <button class="btn btn-primary btn-sm" id="btn-quick-cv-preview">
+            <span>📄 Anteprima CV</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="content-body" id="main-content">
+        
+        <!-- View 1: Job Matcher, CV Tailor & Integrated Cover Letter -->
+        <section class="view-panel" id="view-analyzer">
+          <div class="grid-2" style="align-items: flex-start; gap: 2rem;">
+            
+            <!-- Left Input Column (Single Cohesive Wide Card) -->
+            <div class="glass-card">
+              <div style="margin-bottom: 1.75rem;">
+                <h3 style="margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem; font-size: 1.35rem;">
+                  <span>📝 Inserisci Offerta di Lavoro</span>
+                </h3>
+                <p style="font-size: 1rem; color: var(--text-muted);">Incolla il testo dell'annuncio di lavoro per avviare l'analisi immediata del match e generare CV e Lettera su misura.</p>
+              </div>
+
+              <div class="grid-2" style="gap: 1.25rem;">
+                <div class="form-group">
+                  <label class="form-label" for="job-title-input">Ruolo Desiderato</label>
+                  <input type="text" id="job-title-input" class="form-input" placeholder="es. Addetto Vendite OBI">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="job-company-input">Nome Azienda</label>
+                  <input type="text" id="job-company-input" class="form-input" placeholder="es. OBI Italia Srl">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="job-text-input">Testo Completo Annuncio di Lavoro</label>
+                <textarea id="job-text-input" class="form-textarea" style="min-height: 200px;" placeholder="Incolla qui il testo dell'annuncio di lavoro..."></textarea>
+              </div>
+
+              <!-- Centered Full-Width Primary CTA Button -->
+              <div style="display: flex; flex-direction: column; gap: 0.85rem; margin-top: 1.25rem;">
+                <button class="btn btn-prominent" id="btn-run-analysis">
+                  <span>⚡ Analizza con Google Gemini AI</span>
+                </button>
+                <div style="display: flex; justify-content: flex-end;">
+                  <button class="btn btn-ghost btn-sm" id="btn-sample-job" style="color: var(--text-muted);">
+                    <span>📋 Carica Esempio di Prova</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Panel (Unified Bento Box Area) -->
+            <div class="bento-grid">
+              
+              <!-- ATS Score Radial Graphic Visualization Tile (Bento Top Full) -->
+              <div class="glass-card bento-col-full match-score-card">
+                <div class="gauge-circle">
+                  <svg viewBox="0 0 100 100">
+                    <circle class="gauge-bg" cx="50" cy="50" r="45"></circle>
+                    <circle class="gauge-progress" id="gauge-circle-progress" cx="50" cy="50" r="45"></circle>
+                  </svg>
+                  <div class="gauge-text" id="gauge-score-value">0<span>%</span></div>
+                </div>
+                <div>
+                  <div class="badge badge-cyan" style="margin-bottom: 0.5rem;" id="match-status-badge">Pronto per Analisi</div>
+                  <h3 id="analysis-job-title" style="font-size: 1.25rem;">Nessun annuncio inserito</h3>
+                  <p id="analysis-job-company" style="font-size: 0.95rem; color: var(--text-muted); margin-top: 0.35rem;">Incolla un annuncio a sinistra per sbloccare l'analisi del punteggio ATS e del profilo.</p>
+                </div>
+              </div>
+
+              <!-- Red Flag & Scam Radar Tile (Bento Col Left) -->
+              <div class="glass-card" id="card-scam-radar" style="border-top: 3px solid var(--primary-cyan);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem;">
+                  <h4 style="display: flex; align-items: center; gap: 0.5rem; font-size: 1.05rem;">
+                    <span>🛡️ Red Flag & Scam Radar</span>
+                  </h4>
+                  <span class="badge badge-emerald" id="scam-risk-badge">Rischio Basso</span>
+                </div>
+                <p id="scam-warning-text" style="font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 0.6rem;">L'IA verificherà se l'annuncio nasconde provvigioni o porta a porta.</p>
+                <div id="scam-ai-reasoning" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.6rem;"></div>
+                <div id="scam-flags-list" style="display: flex; flex-direction: column; gap: 0.4rem;"></div>
+              </div>
+
+              <!-- Competenze & Keywords Tile (Bento Col Right) -->
+              <div class="glass-card" id="card-skills-result">
+                <h4 style="margin-bottom: 0.85rem; font-size: 1.05rem;">🔑 Competenze & Parole Chiave</h4>
+                
+                <div style="margin-bottom: 1rem;">
+                  <div class="form-label" style="font-size: 0.85rem; margin-bottom: 0.45rem;">Presenti nel Profilo:</div>
+                  <div class="cv-skills-container" id="container-matched-skills">
+                    <span class="badge badge-slate">In attesa...</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="form-label" style="font-size: 0.85rem; margin-bottom: 0.45rem;">Mancanti da Inserire:</div>
+                  <div class="cv-skills-container" id="container-missing-skills">
+                    <span class="badge badge-slate">In attesa...</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Document Generation Action Hub Tile (Bento Bottom Full) -->
+              <div class="glass-card bento-col-full action-bar">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.25rem; width: 100%;">
+                  <div>
+                    <h4 style="font-size: 1.1rem; margin-bottom: 0.25rem;">🚀 Generazione Documenti</h4>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Crea automaticamente CV su misura e lettera di presentazione personalizzata per questo annuncio.</p>
+                  </div>
+
+                  <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-top: 0.5rem;">
+                    <button class="btn btn-primary" id="btn-generate-tailored-cv" style="background: var(--grad-ai); box-shadow: var(--glow-ai); padding: 0.65rem 1.4rem;">
+                      <span>✨ Genera CV su Misura</span>
+                    </button>
+                    <button class="btn btn-primary" id="btn-generate-cover-letter" style="background: linear-gradient(135deg, #818CF8 0%, #C084FC 100%); box-shadow: 0 0 25px rgba(129, 140, 248, 0.4); padding: 0.65rem 1.4rem;">
+                      <span>✉️ Genera Lettera</span>
+                    </button>
+                    <button class="btn btn-secondary btn-sm" id="btn-add-to-tracker">
+                      <span>📌 Salva in Kanban</span>
+                    </button>
+                    <button class="btn btn-ghost btn-sm" id="btn-regenerate-docs" style="margin-left: auto; color: var(--text-muted); opacity: 0.85;">
+                      <span>🔄 Rigenera Tutti</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- View 2: Job Search Links -->
+        <section class="view-panel" id="view-search" style="display: none;">
+          <div class="glass-card" style="margin-bottom: 1.5rem; border-left: 4px solid var(--primary-blue); background: rgba(56,189,248,0.06);">
+            <div style="display: flex; align-items: flex-start; gap: 1rem;">
+              <span style="font-size: 1.75rem; flex-shrink: 0;">ℹ️</span>
+              <div>
+                <h3 style="margin-bottom: 0.3rem; font-size: 1.1rem;">Come funziona questa sezione</h3>
+                <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.65; margin: 0;">
+                  I portali di lavoro (<strong>Indeed, InfoJobs, LinkedIn</strong>) non mettono a disposizione API pubbliche gratuite per la ricerca di annunci in Italia.
+                  Questa sezione mostra <strong>link di ricerca reali</strong> per ogni settore lavorativo del tuo profilo, già filtrati per Busto Arsizio ±25km e Full Remote.
+                  Cliccando su un portale arrivi direttamente ai risultati aggiornati in tempo reale.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div id="container-search-results" class="grid-2"></div>
+        </section>
+
+        <!-- View 3: Master Profile & Import -->
+        <section class="view-panel" id="view-profile" style="display: none;">
+          
+          <div class="glass-card" id="card-uploaded-cv-info" style="margin-bottom: 1.75rem; border-left: 4px solid var(--primary-blue); background: var(--primary-blue-light);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="font-size: 2.2rem;">📄</div>
+                <div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <h3 id="uploaded-cv-filename" style="font-size: 1.15rem;">Curriculum_Vitae_Matteo_Tamborrino.pdf</h3>
+                    <span class="badge badge-emerald" id="uploaded-cv-status-badge">✓ Caricato & Estratto</span>
+                  </div>
+                  <p id="uploaded-cv-filedetails" style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.2rem;">
+                    Documento PDF Europass • Dati, Esperienze e Titoli estratti nel profilo
+                  </p>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 0.75rem;">
+                <button class="btn btn-primary btn-sm" id="btn-view-uploaded-document">
+                  <span>👁️ Visualizza Documento</span>
+                </button>
+                <button class="btn btn-secondary btn-sm" id="btn-change-uploaded-cv">
+                  <span>🔄 Carica Altro CV</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card" id="card-cv-dropzone-wrapper" style="margin-bottom: 1.75rem; padding: 1.5rem 1.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+              <div>
+                <h3 style="font-size: 1.15rem; margin-bottom: 0.2rem;">📥 Importa & Autocompila CV Esistente</h3>
+                <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">Carica il tuo CV per autocompilare in automatico profilo, esperienze e competenze con l'IA.</p>
+              </div>
+            </div>
+            
+            <div class="upload-dropzone" id="cv-dropzone">
+              <span class="upload-icon">📄</span>
+              <div style="text-align: left;">
+                <div class="upload-title">Trascina qui il file del tuo CV o Clicca per Caricare</div>
+                <div class="upload-desc">Supporta i formati <strong>PDF, DOC, DOCX, TXT</strong></div>
+              </div>
+              <input type="file" id="cv-file-input" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+            </div>
+          </div>
+
+          <!-- Personal Info Card -->
+          <details open class="glass-card collapsible-card" style="margin-bottom: 1.75rem;">
+            <summary>
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-right: 0.5rem;">
+                <h3 style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                  <span>👤 Dati Personali e Sommario Master</span>
+                </h3>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <button class="btn btn-primary btn-sm" id="btn-save-profile" onclick="event.stopPropagation();">💾 Salva Modifiche Profilo</button>
+                  <span class="collapsible-icon">▼</span>
+                </div>
+              </div>
+            </summary>
+
+            <div style="margin-top: 1.35rem;">
+              <div class="grid-2">
+                <div class="form-group">
+                  <label class="form-label">Nome e Cognome</label>
+                  <input type="text" id="prof-fullname" class="form-input" placeholder="es. Mario Rossi">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Titolo Professionale Principale</label>
+                  <input type="text" id="prof-title" class="form-input" placeholder="es. Sviluppatore Software / Commerciale">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Indirizzo Email</label>
+                  <input type="email" id="prof-email" class="form-input" placeholder="es. mario.rossi@email.it">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Numero di Telefono</label>
+                  <input type="text" id="prof-phone" class="form-input" placeholder="es. +39 340 1234567">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Indirizzo / Città / Modalità</label>
+                  <input type="text" id="prof-location" class="form-input" value="Via Canova 24, Busto Arsizio (VA)">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Profilo LinkedIn</label>
+                  <input type="text" id="prof-linkedin" class="form-input" placeholder="es. linkedin.com/in/mariorossi">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Sommario Professionale (Bio)</label>
+                <textarea id="prof-summary" class="form-textarea" style="min-height: 110px;" placeholder="Breve presentazione delle tue esperienze chiave e punti di forza..."></textarea>
+              </div>
+            </div>
+          </details>
+
+          <!-- Skills Card -->
+          <details open class="glass-card collapsible-card" style="margin-bottom: 1.75rem;">
+            <summary>
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-right: 0.5rem;">
+                <h3 style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                  <span>🛠️ Competenze Tecniche & Soft Skills</span>
+                </h3>
+                <span class="collapsible-icon">▼</span>
+              </div>
+            </summary>
+
+            <div style="margin-top: 1.25rem;">
+              <p style="font-size: 0.92rem; margin-bottom: 1.15rem; color: var(--text-muted);">Inserisci le competenze separate da virgola.</p>
+
+              <div class="form-group">
+                <label class="form-label">Competenze Tecniche (Hard Skills)</label>
+                <input type="text" id="prof-tech-skills" class="form-input" placeholder="es. JavaScript, SQL, Excel, Management, Photoshop...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Competenze Relazionali (Soft Skills)</label>
+                <input type="text" id="prof-soft-skills" class="form-input" placeholder="es. Problem Solving, Teamwork, Comunicazione...">
+              </div>
+            </div>
+          </details>
+
+          <!-- Experiences Card -->
+          <details open class="glass-card collapsible-card" style="margin-bottom: 1.75rem;">
+            <summary>
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-right: 0.5rem;">
+                <h3 style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                  <span>💼 Esperienze Lavorative Estratte (Tutte)</span>
+                </h3>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <button class="btn btn-secondary btn-sm" id="btn-add-experience" onclick="event.stopPropagation();">+ Aggiungi Esperienza</button>
+                  <span class="collapsible-icon">▼</span>
+                </div>
+              </div>
+            </summary>
+
+            <div style="margin-top: 1.25rem;">
+              <div id="container-profile-experiences" style="display: flex; flex-direction: column; gap: 1.25rem;">
+              </div>
+            </div>
+          </details>
+
+          <!-- Education Card -->
+          <details open class="glass-card collapsible-card" style="margin-bottom: 1.75rem;">
+            <summary>
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-right: 0.5rem;">
+                <h3 style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                  <span>🎓 Istruzione & Formazione (Diplomi, Lauree, Scuole)</span>
+                </h3>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <button class="btn btn-secondary btn-sm" id="btn-add-education" onclick="event.stopPropagation();">+ Aggiungi Istruzione</button>
+                  <span class="collapsible-icon">▼</span>
+                </div>
+              </div>
+            </summary>
+
+            <div style="margin-top: 1.25rem;">
+              <div id="container-profile-education" style="display: flex; flex-direction: column; gap: 1.25rem;">
+              </div>
+            </div>
+          </details>
+
+          <!-- Courses Card -->
+          <details open class="glass-card collapsible-card" style="margin-bottom: 1.75rem;">
+            <summary>
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-right: 0.5rem;">
+                <h3 style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                  <span>📜 Corsi di Formazione, Certificazioni & Attestati</span>
+                </h3>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <button class="btn btn-secondary btn-sm" id="btn-add-course" onclick="event.stopPropagation();">+ Aggiungi Corso</button>
+                  <span class="collapsible-icon">▼</span>
+                </div>
+              </div>
+            </summary>
+
+            <div style="margin-top: 1.25rem;">
+              <div id="container-profile-courses" style="display: flex; flex-direction: column; gap: 1rem;">
+              </div>
+            </div>
+          </details>
+
+        </section>
+
+
+        <!-- View 4: Tracker -->
+        <section class="view-panel" id="view-tracker" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.75rem;">
+            <div>
+              <h3>📋 Tracciamento Candidature (Kanban)</h3>
+              <p style="font-size: 0.95rem;">Monitora lo stato di tutte le offerte salvate e delle candidature inviate.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-new-application">+ Nuova Candidatura</button>
+          </div>
+
+          <div class="kanban-board">
+            <div class="kanban-column" data-status="interested">
+              <div class="column-header">
+                <h4>⭐ Interessato / Salvato</h4>
+                <span class="badge badge-cyan" id="count-interested">0</span>
+              </div>
+              <div class="kanban-cards-container" id="container-interested"></div>
+            </div>
+
+            <div class="kanban-column" data-status="applied">
+              <div class="column-header">
+                <h4>🚀 Candidatura Inviata</h4>
+                <span class="badge badge-blue" id="count-applied">0</span>
+              </div>
+              <div class="kanban-cards-container" id="container-applied"></div>
+            </div>
+
+            <div class="kanban-column" data-status="interview">
+              <div class="column-header">
+                <h4>💬 Colloquio Programmato</h4>
+                <span class="badge badge-emerald" id="count-interview">0</span>
+              </div>
+              <div class="kanban-cards-container" id="container-interview"></div>
+            </div>
+
+            <div class="kanban-column" data-status="offer">
+              <div class="column-header">
+                <h4>🎉 Offerta / Concluso</h4>
+                <span class="badge badge-slate" id="count-offer">0</span>
+              </div>
+              <div class="kanban-cards-container" id="container-offer"></div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- GLOWING CENTER-SCREEN AI LOADING OVERLAY -->
+  <div class="premium-popup-overlay" id="ai-loading-overlay">
+    <div class="premium-popup-card" style="text-align: center; padding: 2.5rem; max-width: 440px;">
+      <div style="font-size: 2.8rem; margin-bottom: 1rem; animation: pulse 1.5s infinite;">🤖</div>
+      <div class="premium-popup-title" style="font-size: 1.25rem; color: var(--primary-blue); margin-bottom: 0.5rem;">Google Gemini AI in Elaborazione...</div>
+      <div style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.25rem;">
+        Analisi semantica dell'annuncio, confronto competenze e verifica Scam Radar in corso...
+      </div>
+      <div class="spinner" style="width: 38px; height: 38px; border: 3px solid rgba(18, 100, 231, 0.2); border-top-color: var(--primary-blue); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto;"></div>
+    </div>
+  </div>
+
+  <!-- PREMIUM CENTER-SCREEN NOTIFICATION OVERLAY -->
+  <div class="premium-popup-overlay" id="premium-popup-overlay">
+    <div class="premium-popup-card">
+      <span class="premium-popup-icon" id="premium-popup-icon">⚡</span>
+      <div class="premium-popup-title" id="premium-popup-title">Notifica</div>
+      <div class="premium-popup-message" id="premium-popup-message">Messaggio del sistema...</div>
+      <div id="premium-popup-actions" style="display: flex; gap: 0.75rem; justify-content: center;">
+        <button class="btn btn-primary btn-sm" id="btn-close-premium-popup">OK, Capito</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Viewing Uploaded Document Original -->
+  <div class="modal-overlay" id="modal-uploaded-cv-viewer">
+    <div class="modal-container" style="max-width: 960px; height: 90vh;">
+      <div class="modal-header">
+        <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+          <span>📄 Visualizzatore Documento CV Caricato</span>
+        </h3>
+        <button class="btn btn-ghost btn-sm" id="btn-close-doc-viewer" style="font-size: 1.5rem; line-height: 1;">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-doc-viewer-body" style="padding: 0; display: flex; flex-direction: column;">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-doc-viewer-close">Chiudi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Cover Letter Preview & PDF -->
+  <div class="modal-overlay" id="modal-cover-letter-preview">
+    <div class="modal-container" style="max-width: 780px;">
+      <div class="modal-header">
+        <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+          <span>✉️ Anteprima Lettera di Presentazione</span>
+        </h3>
+        <button class="btn btn-ghost btn-sm" id="btn-close-cover-letter-modal" style="font-size: 1.5rem; line-height: 1;">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-cover-letter-body" style="padding: 1.5rem;">
+        <div id="cover-letter-preview-content" style="
+          background: #fff;
+          color: #1a1a2e;
+          padding: 2.5rem 3rem;
+          border-radius: 8px;
+          font-family: 'Times New Roman', serif;
+          font-size: 1rem;
+          line-height: 1.75;
+          white-space: pre-wrap;
+          min-height: 500px;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+        "></div>
+      </div>
+      <div class="modal-footer" style="gap: 0.75rem;">
+        <button class="btn btn-secondary" id="btn-cover-letter-modal-close">Chiudi</button>
+        <button class="btn btn-ghost" id="btn-cover-letter-modal-copy">📋 Copia Testo</button>
+        <button class="btn btn-primary" id="btn-cover-letter-modal-print">🖨️ Stampa / Scarica PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for CV PDF Preview -->
+  <div class="modal-overlay" id="modal-cv-preview">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+          <span>📄 Anteprima CV Formattato</span>
+        </h3>
+        <button class="btn btn-ghost btn-sm" id="btn-close-modal" style="font-size: 1.5rem; line-height: 1;">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-cv-body">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-modal-close">Chiudi</button>
+        <button class="btn btn-primary" id="btn-modal-print">🖨️ Stampa / Scarica PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS Scripts (ES Modules) -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

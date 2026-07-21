@@ -1,0 +1,4 @@
+.vercel
+node_modules
+*.log
+js/api-key.js
