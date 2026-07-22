@@ -599,7 +599,8 @@ class App {
 
     // Toggle active state on menu items
     document.querySelectorAll('.nav-menu .nav-item').forEach(item => {
-      const isMatch = item.getAttribute('data-view') === viewId;
+      const btn = item.querySelector('[data-view]');
+      const isMatch = btn && btn.getAttribute('data-view') === viewId;
       if (isMatch) item.classList.add('active');
       else item.classList.remove('active');
     });
